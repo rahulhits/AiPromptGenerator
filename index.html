@@ -118,6 +118,27 @@
   }
   .shot-row input { padding: 6px 8px; font-size: 12px; }
   .shot-row input.shot-label { color: var(--accent); font-weight: 600; }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.4fr 32px;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .field-row input { padding: 6px 8px; font-size: 12px; }
+  .field-num {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    margin-right: 6px;
+  }
   .btn {
     background: var(--accent);
     color: var(--bg);
@@ -373,15 +394,13 @@ Never delete existing code — comment it out and add new code between the marke
       <label for="page">Page</label>
       <input type="text" id="page" placeholder="localhost:61002/#/edit-ItemFactorizationCompounding/10058">
     </div>
-    <div class="row cols-2">
-      <label for="field">Field</label>
-      <input type="text" id="field" placeholder="Date input">
-      <label for="shows">Shows</label>
-      <input type="text" id="shows" placeholder="literal {{defaultdate}}">
-    </div>
-    <div class="row">
-      <label for="shouldShow">Should show</label>
-      <input type="text" id="shouldShow" placeholder="today's date in dd/MM/yyyy (e.g. 20/08/2026)">
+    <label style="display:block; font-size:13px; color:var(--muted); margin-bottom:6px;">
+      Affected fields <span style="color:var(--accent); font-weight:600;">— one row per field</span>
+    </label>
+    <div id="fields"></div>
+    <div style="display:flex; gap: 8px; align-items: center; margin-top: 4px;">
+      <button type="button" class="btn small" onclick="addField()">+ Add another field</button>
+      <span style="font-size: 11px; color: var(--muted);">One ticket can affect multiple fields — list each one separately.</span>
     </div>
     <div class="row">
       <label for="console">Console errors</label>
@@ -793,6 +812,31 @@ function addFile() {
   addFileRow();
 }
 
+function addFieldRow(data = { field: "", shows: "", shouldShow: "" }) {
+  const container = document.getElementById("fields");
+  const row = document.createElement("div");
+  row.className = "field-row";
+  row.innerHTML = `
+    <input type="text" class="field-name" placeholder="Field name (e.g. Date input)" value="${escapeAttr(data.field)}">
+    <input type="text" class="field-shows" placeholder="Shows — literal (e.g. {{defaultdate}})" value="${escapeAttr(data.shows)}">
+    <input type="text" class="field-should" placeholder="Should show (e.g. 20/08/2026)" value="${escapeAttr(data.shouldShow)}">
+    <button type="button" class="del-btn" title="Remove" onclick="this.parentElement.remove()">×</button>
+  `;
+  container.appendChild(row);
+}
+
+function addField() {
+  addFieldRow();
+}
+
+function getFields() {
+  return [...document.querySelectorAll(".field-row")].map(r => ({
+    field: r.querySelector(".field-name").value.trim(),
+    shows: r.querySelector(".field-shows").value.trim(),
+    shouldShow: r.querySelector(".field-should").value.trim()
+  })).filter(f => f.field || f.shows || f.shouldShow);
+}
+
 /* ---------- LAST-FOLDER MEMORY (File System Access API) ----------
    The browser's file dialog supports a `startIn` option that takes a
    handle. We save the last picked file handle in IndexedDB and pass
@@ -1061,7 +1105,7 @@ function getFormData() {
     return checked ? ASKS[i].label : null;
   }).filter(Boolean);
 
-  return { ticket, branch, dateVal, dateFmt, files, rules, asks };
+  return { ticket, branch, dateVal, dateFmt, fields, files, rules, asks };
 }
 
 function generate() {
@@ -1081,9 +1125,24 @@ function generate() {
   // 2
   out.push("**2. Symptom (literal)**");
   out.push(`- Page:    ${val("page")}`);
-  out.push(`- Field:   ${val("field")}`);
-  out.push(`- Shows:   ${val("shows")}`);
-  out.push(`- Should:  ${val("shouldShow")}`);
+  const fields = getFields();
+  if (fields.length === 0) {
+    out.push(`- Field:   <field name>`);
+    out.push(`- Shows:   <literal value seen on screen>`);
+    out.push(`- Should:  <expected value>`);
+  } else if (fields.length === 1) {
+    const f = fields[0];
+    out.push(`- Field:   ${f.field || "<field name>"}`);
+    out.push(`- Shows:   ${f.shows || "<literal value seen on screen>"}`);
+    out.push(`- Should:  ${f.shouldShow || "<expected value>"}`);
+  } else {
+    out.push(`- Affected fields:`);
+    fields.forEach((f, i) => {
+      out.push(`  - [${i + 1}] ${f.field || "<field name>"}`);
+      out.push(`      - Shows:   ${f.shows || "<literal value seen on screen>"}`);
+      out.push(`      - Should:  ${f.shouldShow || "<expected value>"}`);
+    });
+  }
   const console = val("console");
   if (console) out.push(`- Console errors    : ${console}`);
   const screenshots = getScreenshots();
@@ -1203,15 +1262,13 @@ function saveState() {
     branch: document.getElementById("branch").value,
     date: document.getElementById("date").value,
     page: document.getElementById("page").value,
-    field: document.getElementById("field").value,
-    shows: document.getElementById("shows").value,
-    shouldShow: document.getElementById("shouldShow").value,
     brokenShot: undefined, // legacy — migrated to screenshots on load
     workingShot: undefined, // legacy — migrated to screenshots on load
     console: document.getElementById("console").value,
     screenshots: getScreenshots(),
     expected: document.getElementById("expected").value,
     moduleFolder: document.getElementById("moduleFolder").value,
+    fields: data.fields,
     files: data.files,
     rules: data.rules.map(r => r.slug),
     asks: [...document.querySelectorAll(".ask-item input")].map(i => i.checked)
@@ -1232,9 +1289,6 @@ function loadState() {
   document.getElementById("branch").value = saved.branch || "";
   document.getElementById("date").value = saved.date || "";
   document.getElementById("page").value = saved.page || "";
-  document.getElementById("field").value = saved.field || "";
-  document.getElementById("shows").value = saved.shows || "";
-  document.getElementById("shouldShow").value = saved.shouldShow || "";
   document.getElementById("brokenShot") && (document.getElementById("brokenShot").value = "");
   document.getElementById("workingShot") && (document.getElementById("workingShot").value = "");
   document.getElementById("console").value = saved.console || "";
@@ -1257,6 +1311,19 @@ function loadState() {
   document.getElementById("expected").value = saved.expected || "";
   document.getElementById("moduleFolder").value = saved.moduleFolder || "";
   syncModuleSelectToPath();
+
+  // Fields — array of {field, shows, shouldShow}. Migrate legacy single
+  // field/shows/shouldShow (pre-multi-field schema) into the array.
+  document.getElementById("fields").innerHTML = "";
+  let fields = saved.fields || [];
+  if (!fields.length && (saved.field || saved.shows || saved.shouldShow)) {
+    fields = [{ field: saved.field || "", shows: saved.shows || "", shouldShow: saved.shouldShow || "" }];
+  }
+  if (fields.length) {
+    fields.forEach(f => addFieldRow(f));
+  } else {
+    addFieldRow();
+  }
 
   // Files
   document.getElementById("files").innerHTML = "";
