@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HMS Prompt Form</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #273449;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-2: #818cf8;
+    --good: #4ade80;
+    --warn: #fbbf24;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { margin: 0 0 4px; font-size: 20px; color: var(--accent); }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+  }
+  .section h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section .num {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 700;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+  .section .hint {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 0 0 14px 36px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 10px 12px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .row.cols-2 { grid-template-columns: 140px 1fr 120px 1fr; }
+  label { font-size: 13px; color: var(--muted); }
+  input[type="text"], input[type="date"], textarea, select {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 5px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    width: 100%;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+  }
+  textarea { resize: vertical; min-height: 60px; font-family: ui-monospace, "Cascadia Code", Menlo, monospace; }
+  textarea.code { font-size: 12px; }
+  .file-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 28px;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .file-row input { padding: 6px 8px; font-size: 12px; }
+  .shot-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 32px;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .shot-row input { padding: 6px 8px; font-size: 12px; }
+  .shot-row input.shot-label { color: var(--accent); font-weight: 600; }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.4fr 32px;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .field-row input { padding: 6px 8px; font-size: 12px; }
+  .field-num {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    margin-right: 6px;
+  }
+  .btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 5px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: #0ea5e9; }
+  .btn.secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  .btn.secondary:hover { background: var(--border); }
+  .btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--border); }
+  .btn.danger:hover { background: rgba(248, 113, 113, 0.1); }
+  .btn.small { padding: 4px 10px; font-size: 12px; }
+  .del-btn {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    height: 32px;
+  }
+  .del-btn:hover { background: rgba(248, 113, 113, 0.1); }
+  .rule {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .rule-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .rule-head input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+  .rule-head label { cursor: pointer; color: var(--text); font-size: 13px; }
+  .rule-head label .slug { color: var(--accent); font-weight: 600; }
+  .rule-text {
+    display: none;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--bg);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    font-family: ui-monospace, monospace;
+    font-size: 11.5px;
+    color: var(--muted);
+    white-space: pre-wrap;
+  }
+  .rule.checked .rule-text { display: block; }
+  .ask-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 8px;
+  }
+  .ask-item {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .ask-item input { width: 16px; height: 16px; cursor: pointer; }
+  .ask-item label { cursor: pointer; flex: 1; color: var(--text); font-size: 13px; }
+  .toolbar {
+    position: sticky;
+    bottom: 0;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    z-index: 10;
+  }
+  .output {
+    background: #0a0f1c;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .output h2 { margin: 0 0 10px; color: var(--good); font-size: 15px; }
+  .output textarea {
+    background: var(--bg);
+    border-color: var(--border);
+    min-height: 280px;
+    font-size: 12.5px;
+  }
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--good);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+  .toast.error { background: var(--danger); }
+  details {
+    margin-top: 8px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 6px 10px;
+  }
+  details summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+  details pre {
+    margin: 8px 0 0;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: pre-wrap;
+  }
+  .footer-note {
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  /* Searchable combobox */
+  .combo-wrap { position: relative; width: 100%; }
+  .combo-input { padding-right: 30px; }
+  .combo-toggle {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .combo-toggle:hover { color: var(--accent); }
+  .combo-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    background: var(--panel-2);
+    border: 1px solid var(--accent);
+    border-radius: 5px;
+    z-index: 50;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  }
+  .combo-group-label {
+    padding: 8px 12px 4px;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .combo-option {
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .combo-option:hover,
+  .combo-option.active { background: var(--panel); color: var(--accent); }
+  .combo-option .combo-path {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: ui-monospace, monospace;
+  }
+  .combo-option.active .combo-path { color: var(--accent); }
+  .combo-option mark {
+    background: transparent;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .combo-empty {
+    padding: 14px 12px;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>HMS Prompt Form</h1>
+  <p>Fill the nine sections below. Click <strong>Generate</strong>, then <strong>Copy</strong>. Your draft auto-saves to this browser.</p>
+</header>
+
+<main>
+
+  <!-- ====== SECTION 1 ====== -->
+  <div class="section">
+    <h2><span class="num">1</span> Ticket / Branch Context</h2>
+    <p class="hint">Always include the ticket, branch, and code-change rule. The marker is what keeps the diff reviewable.</p>
+    <div class="row">
+      <label for="ticket">Ticket</label>
+      <input type="text" id="ticket" placeholder="e.g. BW-376">
+    </div>
+    <div class="row">
+      <label for="branch">Branch</label>
+      <input type="text" id="branch" placeholder="e.g. enhancement/BW-376_Updated20Aug26">
+    </div>
+    <div class="row">
+      <label for="date">Date</label>
+      <input type="date" id="date">
+    </div>
+    <details>
+      <summary>Code change rule (paste verbatim into the prompt)</summary>
+      <pre>Every change must be wrapped with:
+
+  //&lt;TICKET&gt; - Rahul - &lt;DD MMM YYYY&gt; start
+  // &lt;one-line note explaining the WHY of the change&gt;
+  // &lt;commented-out old code&gt;
+  &lt;new implementation&gt;
+  //&lt;TICKET&gt; - Rahul - &lt;DD MMM YYYY&gt; end
+
+Never delete existing code — comment it out and add new code between the markers.</pre>
+    </details>
+  </div>
+
+  <!-- ====== SECTION 2 : ENVIRONMENT ====== -->
+  <div class="section">
+    <h2><span class="num">2</span> Environment</h2>
+    <p class="hint">Pre-filled with the project stack so the AI never has to guess the runtime. Edit only if this issue involves something different.</p>
+    <div class="row">
+      <label for="environment">Stack / setup</label>
+      <textarea id="environment" placeholder="AngularJS 1.x front-end, .NET Web API back-end, ..."></textarea>
+    </div>
+  </div>
+
+  <!-- ====== SECTION 3 : SYMPTOM ====== -->
+  <div class="section">
+    <h2><span class="num">3</span> Symptom (literal)</h2>
+    <p class="hint">Be a camera — capture what's actually on screen. "Shows literal {{defaultdate}}" beats "date is broken".</p>
+    <div class="row">
+      <label for="page">Page</label>
+      <input type="text" id="page" placeholder="localhost:61002/#/edit-ItemFactorizationCompounding/10058">
+    </div>
+    <div class="row">
+      <label for="repro">Repro steps</label>
+      <textarea id="repro" placeholder="1. Open record 10058 in Modify mode&#10;2. Click the date input&#10;3. Observe literal {{defaultdate}}"></textarea>
+    </div>
+    <label style="display:block; font-size:13px; color:var(--muted); margin-bottom:6px;">
+      Affected fields <span style="color:var(--accent); font-weight:600;">— one row per field</span>
+    </label>
+    <div id="fields"></div>
+    <div style="display:flex; gap: 8px; align-items: center; margin-top: 4px;">
+      <button type="button" class="btn small" onclick="addField()">+ Add another field</button>
+      <span style="font-size: 11px; color: var(--muted);">One ticket can affect multiple fields — list each one separately.</span>
+    </div>
+    <div class="row">
+      <label for="console">Console errors</label>
+      <textarea id="console" class="code" placeholder="Paste browser console errors here, or 'none'"></textarea>
+    </div>
+    <div style="margin-top: 14px;">
+      <label style="display:block; font-size:13px; color:var(--muted); margin-bottom:6px;">Screenshots / attachments</label>
+      <div id="screenshots"></div>
+      <div style="display:flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px;">
+        <button type="button" class="btn small" style="background: #f87171; color: #0f172a;" onclick="pickScreenshotsWithLabel('Broken')">📷 Pick broken</button>
+        <button type="button" class="btn small" style="background: #4ade80; color: #0f172a;" onclick="pickScreenshotsWithLabel('Working')">📷 Pick working</button>
+        <button type="button" class="btn secondary small" onclick="pickScreenshots()">📷 Pick other (Expected, Console, ...)</button>
+        <button type="button" class="btn secondary small" onclick="addScreenshot()">+ Add blank row</button>
+      </div>
+      <p style="font-size:11px; color:var(--muted); margin: 8px 0 0;">Add as many as you need — broken, working, expected, mobile, etc. The label appears in the generated prompt.</p>
+    </div>
+  </div>
+
+  <!-- ====== SECTION 4 : EXPECTED ====== -->
+  <div class="section">
+    <h2><span class="num">4</span> Expected Behaviour &amp; Definition of Done</h2>
+    <p class="hint">One sentence. Concrete. The "should" sentence the test would check. Then list checkable done-criteria — the AI must verify each before reporting done.</p>
+    <div class="row">
+      <label for="expected">One sentence</label>
+      <textarea id="expected" placeholder="Date input loads with today's date in dd/MM/yyyy; clicking opens the 720kb calendar; no literal {{defaultdate}} visible anywhere."></textarea>
+    </div>
+    <div class="row">
+      <label for="doneCriteria">Done when (one per line)</label>
+      <textarea id="doneCriteria" placeholder="Date shows 20/08/2026 on load&#10;Calendar opens on click&#10;No console errors"></textarea>
+    </div>
+  </div>
+
+  <!-- ====== SECTION 5 : FILES ====== -->
+  <div class="section">
+    <h2><span class="num">5</span> Files Involved</h2>
+    <p class="hint">Start with the module folder so the AI knows where to focus. Then list the specific files you already know about.</p>
+    <div class="row">
+      <label for="moduleSelect">Module</label>
+      <div class="combo-wrap">
+        <input type="text" id="moduleSelect" class="combo-input" placeholder="Search modules (e.g. Inventory, Billing, Common.Security)..." autocomplete="off" spellcheck="false">
+        <button type="button" class="combo-toggle" id="comboToggle" tabindex="-1" title="Show all modules">▾</button>
+        <div id="moduleDropdown" class="combo-dropdown" hidden></div>
+      </div>
+    </div>
+    <div class="row">
+      <label for="moduleFolder">Folder path</label>
+      <input type="text" id="moduleFolder" placeholder="D:\nHIS_MY\HMS.Module.Inventory\App\Inventory\">
+    </div>
+    <p style="font-size:11px; color:var(--muted); margin: 0 0 14px 0; padding-left: 152px;">Optional. If set, the AI searches this folder first before scanning other modules.</p>
+    <label style="display:block; font-size:13px; color:var(--muted); margin-bottom:6px;">Specific files (path + line numbers or function name)</label>
+    <div id="files"></div>
+    <div style="display:flex; gap: 8px; align-items: center; margin-top: 4px;">
+      <button type="button" class="btn small" onclick="pickFiles()">📁 Pick files from disk</button>
+      <button type="button" class="btn secondary small" onclick="addFile()">+ Add blank row</button>
+      <span style="font-size: 11px; color: var(--muted);">Path is auto-built from the module folder above. Edit manually if needed.</span>
+    </div>
+    <div class="row" style="margin-top: 12px;">
+      <label for="codeExcerpt">Code excerpt</label>
+      <textarea id="codeExcerpt" class="code" placeholder="Optional but powerful — paste the suspect function/snippet verbatim. Saves the AI a discovery round-trip." style="min-height: 90px;"></textarea>
+    </div>
+  </div>
+
+  <!-- ====== SECTION 6 : ALREADY TRIED ====== -->
+  <div class="section">
+    <h2><span class="num">6</span> Already Tried / Ruled Out</h2>
+    <p class="hint">The #1 cause of multi-shot loops is the AI retrying things you already disproved. List each attempt and its result.</p>
+    <div class="row">
+      <label for="tried">Attempts &amp; results</label>
+      <textarea id="tried" placeholder="Tried $filter('date') in the date-set path — broke it, writes null/NaN&#10;Cleared browser cache — no change"></textarea>
+    </div>
+  </div>
+
+  <!-- ====== SECTION 7 : CONSTRAINTS ====== -->
+  <div class="section">
+    <h2><span class="num">7</span> Constraints / Do-Not-Touch</h2>
+    <p class="hint">Limit the blast radius. Prevents the over-eager wide refactor that breaks other modules.</p>
+    <div class="row">
+      <label for="constraints">Constraints</label>
+      <textarea id="constraints" placeholder="Do NOT modify shared/common projects unless strictly necessary — if you must, say so first and explain why.&#10;Keep the change inside the module folder above."></textarea>
+    </div>
+  </div>
+
+  <!-- ====== SECTION 8 : RULES ====== -->
+  <div class="section">
+    <h2><span class="num">8</span> Standing Rules</h2>
+    <p class="hint">Tick each rule that applies to <em>this</em> issue. The verbatim text is included automatically.</p>
+    <div id="rules"></div>
+  </div>
+
+  <!-- ====== SECTION 9 : ASK ====== -->
+  <div class="section">
+    <h2><span class="num">9</span> The Ask</h2>
+    <p class="hint">Tick what you want the AI to do. The "root cause" item is the most important one.</p>
+    <div class="ask-grid" id="asks"></div>
+  </div>
+
+  <!-- ====== OUTPUT ====== -->
+  <div class="output">
+    <h2>Generated Prompt</h2>
+    <textarea id="output" readonly></textarea>
+    <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+      <button type="button" class="btn" onclick="generate()">Generate</button>
+      <button type="button" class="btn" onclick="copyOutput()">Copy to clipboard</button>
+      <button type="button" class="btn secondary" onclick="clearAll()">Clear form</button>
+      <button type="button" class="btn secondary" onclick="window.print()">Print</button>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Form auto-saves to localStorage. Bookmark this file for next time.
+  </div>
+</main>
+
+<div class="toolbar">
+  <button type="button" class="btn" onclick="generate()">Generate prompt</button>
+  <button type="button" class="btn" onclick="copyOutput()">Copy</button>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ---------- DATA ---------- */
+
+const STANDING_RULES = [
+  {
+    slug: "code-change-markers",
+    label: "Code change markers",
+    text: "Wrap every change with `//<TICKET> - Rahul - <DD MMM YYYY> start/end` markers; comment out old code, add new code between. Never delete existing code."
+  },
+  {
+    slug: "node-c-syntax",
+    label: "node -c syntax check after every .js edit",
+    text: "Run `node -c <file>` after every Edit/Write on a .js file. A stray `};` from a partial multi-line replacement silently breaks AngularJS bootstrap (whole controller fails to load)."
+  },
+  {
+    slug: "720kb-datepicker",
+    label: "720kb datepicker — wrapper only, NO date-set",
+    text: "720kb-datepicker: use wrapper with `date-format=\"{{defaultdate}}\"` + `min-date=\"01/01/1940\"` ONLY. `date-set` on a dd/MM/yyyy literal string writes `\"//\"` and null/NaN. Do NOT rewrite `new Date().toString(fmt)` into `$filter('date')` inside the date-set path."
+  },
+  {
+    slug: "angularjs-select-ngrepeat",
+    label: "AngularJS <select> via ng-repeat, never jQuery",
+    text: "Populate `<select ng-model>` options with `ng-repeat` against a $scope array. Never use jQuery `.html()/.append()` — it bypasses AngularJS two-way binding."
+  },
+  {
+    slug: "scope-array-reassign",
+    label: "Don't reassign $scope arrays after pushing",
+    text: "Never `$scope.X = localBuf` after pushing to `localBuf` — it wipes the Modify rows. Push directly to `$scope.X.push(...)` or sync the buffer from the loaded list."
+  }
+];
+
+const ASKS = [
+  { key: "root-cause", label: "Find the ROOT CAUSE — don't just patch the visible symptom", default: true },
+  { key: "marker-pattern", label: "Apply the fix using the <TICKET> code-change marker pattern", default: true },
+  { key: "node-c", label: "Run `node -c <file>` to verify JS syntax", default: true },
+  { key: "report-files", label: "Tell me which files you changed and which markers you used", default: true },
+  { key: "regression", label: "Add a regression test or note the rule that prevented this", default: false },
+  { key: "build-verify", label: "Rebuild the affected module and verify in browser", default: false },
+  { key: "rebuild-solution", label: "Rebuild the complete solution (all modules) — use when the fix touches shared/common projects", default: false }
+];
+
+const STORAGE_KEY = "hms-prompt-form-v1";
+
+const DEFAULT_ENVIRONMENT = [
+  "Front-end: AngularJS 1.x (module-per-folder under D:\\nHIS_MY\\HMS.Module.*\\App\\)",
+  "Back-end: .NET Web API (HMS.Services.WebAPI), SQL Server (HMS.Infrastructure.Data.SqlServer)",
+  "Datepicker: 720kb angular-datepicker",
+  "Run locally at localhost:61002; tested in Chrome/Edge"
+].join("\n");
+
+const DEFAULT_CONSTRAINTS =
+  "Do NOT modify shared/common projects unless strictly necessary — if you must, say so first and explain why.";
+
+/* ---------- MODULES (auto-discovered from D:\nHIS_MY) ---------- */
+
+const MODULE_GROUPS = [
+  {
+    label: "Functional Modules",
+    modules: [
+      "HMS.Module.AdmissionConfiguration",
+      "HMS.Module.AmbulanceConfiguration",
+      "HMS.Module.AncillaryServices",
+      "HMS.Module.Billing",
+      "HMS.Module.BillingConfiguration",
+      "HMS.Module.BloodBank",
+      "HMS.Module.BloodBankConfiguration",
+      "HMS.Module.CSSD",
+      "HMS.Module.Demo",
+      "HMS.Module.Dialysis",
+      "HMS.Module.DietAndNutritionConfiguration",
+      "HMS.Module.Equipment",
+      "HMS.Module.EquipmentConfiguration",
+      "HMS.Module.GeneralConfiguration",
+      "HMS.Module.GeneralMaintenance",
+      "HMS.Module.HouseKeeping",
+      "HMS.Module.IPD",
+      "HMS.Module.Inventory",
+      "HMS.Module.InventoryConfiguration",
+      "HMS.Module.Investigation",
+      "HMS.Module.InvestigationConfiguration",
+      "HMS.Module.LabConfiguration",
+      "HMS.Module.Location",
+      "HMS.Module.NursingConfiguration",
+      "HMS.Module.NursingStation",
+      "HMS.Module.OPD",
+      "HMS.Module.OTConfiguration",
+      "HMS.Module.OperationTheatre",
+      "HMS.Module.PatientConfiguration",
+      "HMS.Module.Reports",
+      "HMS.Module.User",
+      "HMS.Module.UserRole"
+    ]
+  },
+  {
+    label: "Shared / Infrastructure",
+    modules: [
+      "HMS.Business.Interfaces",
+      "HMS.Common.Communicator",
+      "HMS.Common.Interfaces",
+      "HMS.Common.Security",
+      "HMS.Domain.Entities",
+      "HMS.Domain.Interfaces",
+      "HMS.Infrastructure.Data",
+      "HMS.Infrastructure.Data.Interfaces",
+      "HMS.Infrastructure.Data.SqlServer",
+      "HMS.Infrastructure.Interfaces",
+      "HMS.Infrastructure.Logging",
+      "HMS.Infrastructure.PgSqlServer",
+      "HMS.Resource.Localization",
+      "HMS.Services.Interfaces",
+      "HMS.Services.WebAPI",
+      "HMS.Tests.Playwright",
+      "HMS.Tests.Unit"
+    ]
+  }
+];
+
+const ALL_MODULES = MODULE_GROUPS.flatMap(g => g.modules);
+const CUSTOM_VALUE = "__custom__";
+
+/* ---------- RENDERERS ---------- */
+
+function renderModules() {
+  // No-op — the dropdown is populated on demand by populateModuleDropdown().
+  // Kept as a stub so the boot sequence stays consistent.
+}
+
+function populateModuleDropdown(query = "") {
+  const dd = document.getElementById("moduleDropdown");
+  dd.innerHTML = "";
+  const q = query.trim().toLowerCase();
+
+  // Build filtered list with group labels preserved
+  const fragments = [];
+  let totalMatches = 0;
+
+  MODULE_GROUPS.forEach(group => {
+    const matches = group.modules.filter(m => {
+      if (!q) return true;
+      const haystack = (m + " " + m.replace(/^HMS\./, "")).toLowerCase();
+      return haystack.includes(q);
+    });
+    if (matches.length === 0) return;
+    totalMatches += matches.length;
+
+    const label = document.createElement("div");
+    label.className = "combo-group-label";
+    label.textContent = group.label;
+    fragments.push(label);
+
+    matches.forEach(m => {
+      const opt = document.createElement("div");
+      opt.className = "combo-option";
+      opt.dataset.value = m;
+      const displayName = m.replace(/^HMS\./, "");
+      const pathHint = `D:\\nHIS_MY\\${m}\\`;
+      opt.innerHTML = `
+        <span>${highlightMatch(displayName, q)}</span>
+        <span class="combo-path">${highlightMatch(m, q)}</span>
+      `;
+      opt.addEventListener("mousedown", e => {
+        e.preventDefault(); // don't blur the input first
+        selectModule(m);
+      });
+      fragments.push(opt);
+    });
+  });
+
+  if (totalMatches === 0) {
+    const empty = document.createElement("div");
+    empty.className = "combo-empty";
+    empty.textContent = `No module matches "${query}"`;
+    fragments.push(empty);
+  } else {
+    // Always offer custom path at the bottom
+    const custom = document.createElement("div");
+    custom.className = "combo-option";
+    custom.dataset.value = CUSTOM_VALUE;
+    custom.innerHTML = `
+      <span>Custom path...</span>
+      <span class="combo-path">manual entry</span>
+    `;
+    custom.addEventListener("mousedown", e => {
+      e.preventDefault();
+      selectModule(CUSTOM_VALUE);
+    });
+    fragments.push(custom);
+  }
+
+  fragments.forEach(el => dd.appendChild(el));
+  dd._activeIndex = -1;
+}
+
+function highlightMatch(text, query) {
+  if (!query) return escapeHtml(text);
+  const idx = text.toLowerCase().indexOf(query);
+  if (idx < 0) return escapeHtml(text);
+  return escapeHtml(text.slice(0, idx))
+    + "<mark>" + escapeHtml(text.slice(idx, idx + query.length)) + "</mark>"
+    + escapeHtml(text.slice(idx + query.length));
+}
+
+function selectModule(value) {
+  const input = document.getElementById("moduleSelect");
+  const folder = document.getElementById("moduleFolder");
+  if (value === CUSTOM_VALUE || !value) {
+    input.value = "";
+    folder.value = "";
+    input.focus();
+  } else {
+    input.value = value.replace(/^HMS\./, "");
+    folder.value = `D:\\nHIS_MY\\${value}\\`;
+  }
+  closeDropdown();
+  saveState();
+}
+
+function openDropdown() {
+  // Always show the full list when the dropdown opens — show all modules,
+  // don't pre-filter by the input's current value.
+  populateModuleDropdown("");
+  document.getElementById("moduleDropdown").hidden = false;
+}
+
+function closeDropdown() {
+  document.getElementById("moduleDropdown").hidden = true;
+}
+
+function isDropdownOpen() {
+  return !document.getElementById("moduleDropdown").hidden;
+}
+
+function moveActive(delta) {
+  const dd = document.getElementById("moduleDropdown");
+  const options = [...dd.querySelectorAll(".combo-option")];
+  if (options.length === 0) return;
+  let idx = (dd._activeIndex ?? -1) + delta;
+  if (idx < 0) idx = options.length - 1;
+  if (idx >= options.length) idx = 0;
+  options.forEach((o, i) => o.classList.toggle("active", i === idx));
+  dd._activeIndex = idx;
+  options[idx].scrollIntoView({ block: "nearest" });
+}
+
+function activateHighlighted() {
+  const dd = document.getElementById("moduleDropdown");
+  const idx = dd._activeIndex ?? -1;
+  const options = [...dd.querySelectorAll(".combo-option")];
+  if (idx >= 0 && options[idx]) {
+    selectModule(options[idx].dataset.value);
+  }
+}
+
+function syncModuleSelectToPath() {
+  // If the saved path matches a known module, set the input text to the
+  // module name. Otherwise, leave the input empty (custom path).
+  const folder = document.getElementById("moduleFolder").value.trim();
+  const input = document.getElementById("moduleSelect");
+  let matched = "";
+  if (folder) {
+    for (const m of ALL_MODULES) {
+      const root = `D:\\nHIS_MY\\${m}\\`;
+      if (folder === root || folder.startsWith(root)) {
+        matched = m.replace(/^HMS\./, "");
+        break;
+      }
+    }
+  }
+  input.value = matched;
+}
+
+function renderRules() {
+  const container = document.getElementById("rules");
+  container.innerHTML = "";
+  STANDING_RULES.forEach((rule, i) => {
+    const div = document.createElement("div");
+    div.className = "rule";
+    div.dataset.slug = rule.slug;
+    div.innerHTML = `
+      <div class="rule-head">
+        <input type="checkbox" id="rule-${i}" onchange="onRuleChange(this)">
+        <label for="rule-${i}"><span class="slug">${rule.label}</span></label>
+      </div>
+      <div class="rule-text">${escapeHtml(rule.text)}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderAsks() {
+  const container = document.getElementById("asks");
+  container.innerHTML = "";
+  ASKS.forEach((ask, i) => {
+    const div = document.createElement("div");
+    div.className = "ask-item";
+    div.innerHTML = `
+      <input type="checkbox" id="ask-${i}" ${ask.default ? "checked" : ""}>
+      <label for="ask-${i}">${ask.label}</label>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function addFileRow(data = { path: "", line: "", note: "" }) {
+  const container = document.getElementById("files");
+  const row = document.createElement("div");
+  row.className = "file-row";
+  row.innerHTML = `
+    <input type="text" class="file-path" placeholder="D:\\nHIS_MY\\HMS.Module.Inventory\\App\\Inventory\\controller\\ItemFactorizationCompoundingController.js" value="${escapeAttr(data.path)}">
+    <input type="text" class="file-line" placeholder="lines 24-30" value="${escapeAttr(data.line)}">
+    <button type="button" class="del-btn" title="Remove" onclick="this.parentElement.remove()">×</button>
+  `;
+  // Add a hidden note row below (use a wrapper div for clarity)
+  const wrap = document.createElement("div");
+  wrap.appendChild(row);
+  const note = document.createElement("input");
+  note.type = "text";
+  note.className = "file-note";
+  note.placeholder = "Short note — e.g. \"fngetsessionvalue1 — date init\"";
+  note.value = data.note || "";
+  note.style.cssText = "width:100%; margin-top:4px; font-size:12px; padding: 6px 8px; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); border-radius: 5px;";
+  wrap.appendChild(note);
+  container.appendChild(wrap);
+}
+
+function addFile() {
+  addFileRow();
+}
+
+function addFieldRow(data = { field: "", shows: "", shouldShow: "" }) {
+  const container = document.getElementById("fields");
+  const row = document.createElement("div");
+  row.className = "field-row";
+  row.innerHTML = `
+    <input type="text" class="field-name" placeholder="Field name (e.g. Date input)" value="${escapeAttr(data.field)}">
+    <input type="text" class="field-shows" placeholder="Shows — literal (e.g. {{defaultdate}})" value="${escapeAttr(data.shows)}">
+    <input type="text" class="field-should" placeholder="Should show (e.g. 20/08/2026)" value="${escapeAttr(data.shouldShow)}">
+    <button type="button" class="del-btn" title="Remove" onclick="this.parentElement.remove()">×</button>
+  `;
+  container.appendChild(row);
+}
+
+function addField() {
+  addFieldRow();
+}
+
+function getFields() {
+  return [...document.querySelectorAll(".field-row")].map(r => ({
+    field: r.querySelector(".field-name").value.trim(),
+    shows: r.querySelector(".field-shows").value.trim(),
+    shouldShow: r.querySelector(".field-should").value.trim()
+  })).filter(f => f.field || f.shows || f.shouldShow);
+}
+
+/* ---------- LAST-FOLDER MEMORY (File System Access API) ----------
+   The browser's file dialog supports a `startIn` option that takes a
+   handle. We save the last picked file handle in IndexedDB and pass
+   it on next picker call so the dialog reopens in the same folder.
+*/
+const FS_DB_NAME = "hms-prompt-form-fs";
+const FS_DB_STORE = "lastHandles";
+const FS_KEY_FILES = "lastFile";
+const FS_KEY_SHOTS = "lastShot";
+
+function openFsDb() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(FS_DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(FS_DB_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveLastHandle(key, handle) {
+  try {
+    const db = await openFsDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(FS_DB_STORE, "readwrite");
+      tx.objectStore(FS_DB_STORE).put(handle, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) { /* ignore — best effort */ }
+}
+
+async function loadLastHandle(key) {
+  try {
+    const db = await openFsDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(FS_DB_STORE, "readonly");
+      const req = tx.objectStore(FS_DB_STORE).get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  } catch (e) { return null; }
+}
+
+async function ensureReadPermission(handle) {
+  if (!handle) return false;
+  try {
+    const opts = { mode: "read" };
+    if (await handle.queryPermission(opts) === "granted") return true;
+    return await handle.requestPermission(opts) === "granted";
+  } catch (e) { return false; }
+}
+
+async function pickFiles() {
+  let fileNames = [];
+
+  // Preferred: File System Access API (Chrome / Edge / Brave on Windows).
+  // Returns full handles — but for security, the path is not exposed,
+  // so we only get the file name from the handle.
+  if (window.showOpenFilePicker) {
+    try {
+      const startIn = (await ensureReadPermission(await loadLastHandle(FS_KEY_FILES)))
+        ? await loadLastHandle(FS_KEY_FILES)
+        : undefined;
+      const handles = await window.showOpenFilePicker({
+        multiple: true,
+        startIn,
+        excludeAcceptAllOption: false,
+        types: [
+          {
+            description: "Source files",
+            accept: {
+              "text/javascript": [".js"],
+              "text/html":       [".cshtml", ".html", ".htm"],
+              "text/css":        [".css"],
+              "application/json":[".json"],
+              "text/x-csharp":   [".cs"],
+              "text/x-sql":      [".sql"]
+            }
+          }
+        ]
+      });
+      fileNames = handles.map(h => h.name);
+      // Remember the directory for next time
+      await saveLastHandle(FS_KEY_FILES, handles[0]);
+    } catch (e) {
+      if (e.name === "AbortError") return; // user cancelled
+      fileNames = await pickFilesFallback();
+    }
+  } else {
+    fileNames = await pickFilesFallback();
+  }
+
+  if (!fileNames.length) return;
+
+  // Build the full path from the module folder, if one is set.
+  const moduleFolder = document.getElementById("moduleFolder").value.trim();
+  for (const name of fileNames) {
+    let fullPath = name;
+    if (moduleFolder) {
+      const base = moduleFolder.endsWith("\\") ? moduleFolder : moduleFolder + "\\";
+      fullPath = base + name;
+    }
+    addFileRow({ path: fullPath, line: "", note: "" });
+  }
+  saveState();
+  toast(fileNames.length === 1 ? "Added 1 file" : `Added ${fileNames.length} files`);
+}
+
+function pickFilesFallback() {
+  // Fallback for browsers without showOpenFilePicker (Firefox, Safari).
+  // Returns only file names — the user fills the path manually.
+  return new Promise(resolve => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+    input.style.display = "none";
+    document.body.appendChild(input);
+    input.addEventListener("change", () => {
+      const names = [...input.files].map(f => f.name);
+      document.body.removeChild(input);
+      resolve(names);
+    });
+    input.addEventListener("cancel", () => {
+      document.body.removeChild(input);
+      resolve([]);
+    });
+    input.click();
+  });
+}
+
+function addScreenshotRow(data = { label: "", path: "", note: "" }) {
+  const container = document.getElementById("screenshots");
+  const row = document.createElement("div");
+  row.className = "shot-row";
+  row.innerHTML = `
+    <input type="text" class="shot-label" placeholder="Label (e.g. Broken, Working, Expected)" value="${escapeAttr(data.label)}">
+    <input type="text" class="shot-path" placeholder="Path or URL — e.g. E:\\BW-376\\Redo\\1.jpg" value="${escapeAttr(data.path)}">
+    <button type="button" class="del-btn" title="Remove" onclick="this.closest('.shot-row').parentElement.remove()">×</button>
+  `;
+  const wrap = document.createElement("div");
+  wrap.appendChild(row);
+  const note = document.createElement("input");
+  note.type = "text";
+  note.className = "shot-note";
+  note.placeholder = "Explanation (optional) — e.g. 'record 10058, today's date missing'";
+  note.value = data.note || "";
+  note.style.cssText = "width:100%; margin: 0 0 10px 0; font-size:12px; padding: 6px 8px; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); border-radius: 5px;";
+  wrap.appendChild(note);
+  container.appendChild(wrap);
+}
+
+function addScreenshot() {
+  addScreenshotRow();
+}
+
+async function pickScreenshots() {
+  return pickScreenshotsWithLabel("");
+}
+
+async function pickScreenshotsWithLabel(forcedLabel) {
+  let fileNames = [];
+
+  if (window.showOpenFilePicker) {
+    try {
+      const saved = await loadLastHandle(FS_KEY_SHOTS);
+      const startIn = (await ensureReadPermission(saved)) ? saved : undefined;
+      const handles = await window.showOpenFilePicker({
+        multiple: true,
+        startIn,
+        excludeAcceptAllOption: false,
+        types: [
+          {
+            description: "Images",
+            accept: {
+              "image/jpeg":    [".jpg", ".jpeg"],
+              "image/png":     [".png"],
+              "image/gif":     [".gif"],
+              "image/bmp":     [".bmp"],
+              "image/webp":    [".webp"],
+              "image/svg+xml": [".svg"]
+            }
+          }
+        ]
+      });
+      fileNames = handles.map(h => h.name);
+      await saveLastHandle(FS_KEY_SHOTS, handles[0]);
+    } catch (e) {
+      if (e.name === "AbortError") return;
+      fileNames = await pickFilesFallback();
+    }
+  } else {
+    fileNames = await pickFilesFallback();
+  }
+
+  if (!fileNames.length) return;
+
+  // If a label is forced (Broken / Working), use it. Otherwise, try to
+  // guess from the file name.
+  const existingLabels = new Set(
+    [...document.querySelectorAll(".shot-label")].map(i => i.value.trim().toLowerCase())
+  );
+  const suggest = (name) => {
+    const lower = name.toLowerCase();
+    if ((lower.includes("broken") || lower.includes("error") || lower.includes("bug")) && !existingLabels.has("broken"))  return "Broken";
+    if ((lower.includes("working") || lower.includes("good") || lower.includes("ok"))  && !existingLabels.has("working")) return "Working";
+    if ((lower.includes("expected") || lower.includes("spec")) && !existingLabels.has("expected"))                       return "Expected";
+    if ((lower.includes("console")) && !existingLabels.has("console"))                                                     return "Console";
+    return "";
+  };
+
+  for (const f of fileNames) {
+    const name = typeof f === "string" ? f : f.name;
+    const label = forcedLabel || suggest(name);
+    addScreenshotRow({ label, path: name, note: "" });
+  }
+  saveState();
+  const verb = forcedLabel ? `Added ${forcedLabel.toLowerCase()} screenshot` : "Added screenshot";
+  toast(fileNames.length === 1 ? `${verb}` : `${verb.replace("screenshot", "screenshots")} (${fileNames.length})`);
+}
+
+function getScreenshots() {
+  return [...document.querySelectorAll(".shot-row")].map(r => {
+    const wrap = r.parentElement;
+    const note = wrap.querySelector(".shot-note");
+    return {
+      label: r.querySelector(".shot-label").value.trim(),
+      path: r.querySelector(".shot-path").value.trim(),
+      note: note ? note.value.trim() : ""
+    };
+  }).filter(s => s.path || s.label || s.note);
+}
+
+/* ---------- STATE ---------- */
+
+function onRuleChange(checkbox) {
+  const rule = checkbox.closest(".rule");
+  rule.classList.toggle("checked", checkbox.checked);
+  saveState();
+}
+
+function getFormData() {
+  const ticket = document.getElementById("ticket").value.trim();
+  const branch = document.getElementById("branch").value.trim();
+  const dateVal = document.getElementById("date").value;
+  const dateFmt = dateVal ? formatDate(dateVal) : "";
+
+  const files = [...document.querySelectorAll(".file-row")].map(r => {
+    const wrap = r.parentElement;
+    const note = wrap.querySelector(".file-note");
+    return {
+      path: r.querySelector(".file-path").value.trim(),
+      line: r.querySelector(".file-line").value.trim(),
+      note: note ? note.value.trim() : ""
+    };
+  }).filter(f => f.path);
+
+  const rules = [...document.querySelectorAll(".rule")].map(r => {
+    const checked = r.querySelector("input[type=checkbox]").checked;
+    const slug = r.dataset.slug;
+    const rule = STANDING_RULES.find(x => x.slug === slug);
+    return checked ? rule : null;
+  }).filter(Boolean);
+
+  const asks = [...document.querySelectorAll(".ask-item")].map((item, i) => {
+    const checked = item.querySelector("input").checked;
+    return checked ? ASKS[i].label : null;
+  }).filter(Boolean);
+
+  return { ticket, branch, dateVal, dateFmt, fields: getFields(), files, rules, asks };
+}
+
+function generate() {
+  saveState();
+  const d = getFormData();
+  const out = [];
+
+  // 1
+  out.push("**1. Ticket / Branch context**");
+  out.push(`- Ticket: ${d.ticket || "<TICKET>"}`);
+  out.push(`- Branch: ${d.branch || "<branch>"}`);
+  out.push(`- Date:   ${d.dateFmt || "<DD MMM YYYY>"}`);
+  out.push(`- Code change rule: wrap every change with \`//${d.ticket || "<TICKET>"} - Rahul - ${d.dateFmt || "<DD MMM YYYY>"} start/end\`,`);
+  out.push(`  comment out the existing code, add new implementation between.`);
+  out.push("");
+
+  // 2
+  out.push("**2. Environment**");
+  const env = val("environment") || DEFAULT_ENVIRONMENT;
+  env.split("\n").map(l => l.trim()).filter(Boolean).forEach(l => out.push(`- ${l}`));
+  out.push("");
+
+  // 3
+  out.push("**3. Symptom (literal)**");
+  out.push(`- Page:    ${val("page")}`);
+  const fields = getFields();
+  if (fields.length === 0) {
+    out.push(`- Field:   <field name>`);
+    out.push(`- Shows:   <literal value seen on screen>`);
+    out.push(`- Should:  <expected value>`);
+  } else if (fields.length === 1) {
+    const f = fields[0];
+    out.push(`- Field:   ${f.field || "<field name>"}`);
+    out.push(`- Shows:   ${f.shows || "<literal value seen on screen>"}`);
+    out.push(`- Should:  ${f.shouldShow || "<expected value>"}`);
+  } else {
+    out.push(`- Affected fields:`);
+    fields.forEach((f, i) => {
+      out.push(`  - [${i + 1}] ${f.field || "<field name>"}`);
+      out.push(`      - Shows:   ${f.shows || "<literal value seen on screen>"}`);
+      out.push(`      - Should:  ${f.shouldShow || "<expected value>"}`);
+    });
+  }
+  const repro = val("repro");
+  if (repro) {
+    out.push(`- Steps to reproduce:`);
+    repro.split("\n").map(l => l.trim()).filter(Boolean).forEach(l => {
+      out.push(`  ${/^\d+[.)]/.test(l) ? l : "- " + l}`);
+    });
+  }
+  const consoleErrs = val("console");
+  if (consoleErrs) out.push(`- Console errors    : ${consoleErrs}`);
+  const screenshots = getScreenshots();
+  if (screenshots.length) {
+    out.push(`- Screenshots:`);
+    screenshots.forEach(s => {
+      const tag = s.label ? `[${s.label}]` : "[attachment]";
+      const note = s.note ? ` — ${s.note}` : "";
+      out.push(`  - ${tag} ${s.path}${note}`);
+    });
+  }
+  out.push("");
+
+  // 4
+  out.push("**4. Expected behaviour & definition of done**");
+  out.push(val("expected") || "<one sentence describing what should happen>");
+  const done = val("doneCriteria");
+  if (done) {
+    out.push(`- The fix is DONE only when ALL of these hold:`);
+    done.split("\n").map(l => l.trim()).filter(Boolean).forEach((l, i) => {
+      out.push(`  ${i + 1}. ${l}`);
+    });
+  }
+  out.push("");
+
+  // 5
+  out.push("**5. Files involved**");
+  const moduleFolder = val("moduleFolder");
+  if (moduleFolder) {
+    out.push(`- Module / folder to focus on: ${moduleFolder}  → search here FIRST`);
+  }
+  if (d.files.length === 0) {
+    out.push(`- Specific files: <controller path> (lines X-Y — short note)`);
+  } else {
+    if (moduleFolder) out.push(`- Specific files:`);
+    d.files.forEach(f => {
+      const loc = f.line ? ` (${f.line})` : "";
+      const note = f.note ? ` — ${f.note}` : "";
+      out.push(`  - ${f.path}${loc}${note}`);
+    });
+  }
+  const excerpt = document.getElementById("codeExcerpt").value.trim();
+  if (excerpt) {
+    out.push(`- Relevant code excerpt (verbatim):`);
+    out.push("```");
+    out.push(excerpt);
+    out.push("```");
+  }
+  out.push("");
+
+  // 6
+  const tried = val("tried");
+  out.push("**6. Already tried / ruled out — do NOT retry these**");
+  if (tried) {
+    tried.split("\n").map(l => l.trim()).filter(Boolean).forEach(l => out.push(`- ${l}`));
+  } else {
+    out.push("- (nothing tried yet)");
+  }
+  out.push("");
+
+  // 7
+  out.push("**7. Constraints**");
+  const constraints = val("constraints") || DEFAULT_CONSTRAINTS;
+  constraints.split("\n").map(l => l.trim()).filter(Boolean).forEach(l => out.push(`- ${l}`));
+  out.push("");
+
+  // 8
+  out.push("**8. Standing rules that apply (follow these VERBATIM)**");
+  if (d.rules.length === 0) {
+    out.push("- <rule 1, pasted verbatim>");
+  } else {
+    d.rules.forEach(r => out.push(`- ${r.text}`));
+  }
+  out.push("");
+
+  // 9
+  out.push("**9. The ask**");
+  if (d.asks.length === 0) {
+    out.push("- Find the ROOT CAUSE — don't just patch the visible symptom.");
+  } else {
+    d.asks.forEach(a => {
+      // Replace <TICKET> placeholder with the actual ticket id
+      out.push(`- ${a.replace(/<TICKET>/g, d.ticket || "<TICKET>")}`);
+    });
+  }
+  out.push("");
+
+  // Final output requirements — always included
+  out.push("**Final output requirements (mandatory)**");
+  out.push("- BEFORE writing any code, state your root-cause hypothesis in one sentence.");
+  out.push("  If you are missing information you need, ASK instead of guessing.");
+  out.push("- Apply the standing rules from section 8 to every change.");
+  out.push("- Verify every 'definition of done' item from section 4 before reporting done.");
+  out.push("- END your reply with a section titled `Files Modified` listing EVERY file you");
+  out.push("  changed: full path, one-line summary of the change, and the marker used");
+  out.push(`  (\`//${d.ticket || "<TICKET>"} - Rahul - ${d.dateFmt || "<DD MMM YYYY>"} start/end\`).`);
+  out.push("");
+
+  document.getElementById("output").value = out.join("\n");
+  toast("Prompt generated");
+}
+
+function val(id) {
+  return document.getElementById(id).value.trim();
+}
+
+function formatDate(iso) {
+  // iso = YYYY-MM-DD ; output = "20 Aug 2026"
+  const [y, m, d] = iso.split("-").map(Number);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${d} ${months[m - 1]} ${y}`;
+}
+
+function copyOutput() {
+  const out = document.getElementById("output").value;
+  if (!out) {
+    generate();
+  }
+  const text = document.getElementById("output").value;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(
+      () => toast("Copied to clipboard"),
+      () => fallbackCopy(text)
+    );
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    toast("Copied to clipboard");
+  } catch (e) {
+    toast("Copy failed — select manually", true);
+  }
+  document.body.removeChild(ta);
+}
+
+function clearAll() {
+  if (!confirm("Clear all fields and reset to defaults?")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+/* ---------- PERSISTENCE ---------- */
+
+function saveState() {
+  const data = getFormData();
+  const simple = {
+    ticket: document.getElementById("ticket").value,
+    branch: document.getElementById("branch").value,
+    date: document.getElementById("date").value,
+    environment: document.getElementById("environment").value,
+    page: document.getElementById("page").value,
+    repro: document.getElementById("repro").value,
+    console: document.getElementById("console").value,
+    screenshots: getScreenshots(),
+    expected: document.getElementById("expected").value,
+    doneCriteria: document.getElementById("doneCriteria").value,
+    moduleFolder: document.getElementById("moduleFolder").value,
+    codeExcerpt: document.getElementById("codeExcerpt").value,
+    tried: document.getElementById("tried").value,
+    constraints: document.getElementById("constraints").value,
+    fields: data.fields,
+    files: data.files,
+    rules: data.rules.map(r => r.slug),
+    asks: [...document.querySelectorAll(".ask-item input")].map(i => i.checked)
+  };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(simple));
+  } catch (e) { /* quota — ignore */ }
+}
+
+function loadState() {
+  let saved;
+  try {
+    saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  } catch (e) { return; }
+  if (!saved) return;
+
+  document.getElementById("ticket").value = saved.ticket || "";
+  document.getElementById("branch").value = saved.branch || "";
+  document.getElementById("date").value = saved.date || "";
+  document.getElementById("environment").value = saved.environment || "";
+  document.getElementById("page").value = saved.page || "";
+  document.getElementById("repro").value = saved.repro || "";
+  document.getElementById("console").value = saved.console || "";
+
+  // Screenshots — migrate legacy brokenShot/workingShot if present
+  const shotsContainer = document.getElementById("screenshots");
+  shotsContainer.innerHTML = "";
+  let shots = saved.screenshots || [];
+  if (!shots.length && (saved.brokenShot || saved.workingShot)) {
+    shots = [];
+    if (saved.brokenShot)  shots.push({ label: "Broken",  path: saved.brokenShot,  note: "" });
+    if (saved.workingShot) shots.push({ label: "Working", path: saved.workingShot, note: "" });
+  }
+  if (shots.length) {
+    shots.forEach(s => addScreenshotRow(s));
+  } else {
+    addScreenshotRow({ label: "Broken",  path: "", note: "" });
+    addScreenshotRow({ label: "Working", path: "", note: "" });
+  }
+  document.getElementById("expected").value = saved.expected || "";
+  document.getElementById("doneCriteria").value = saved.doneCriteria || "";
+  document.getElementById("moduleFolder").value = saved.moduleFolder || "";
+  document.getElementById("codeExcerpt").value = saved.codeExcerpt || "";
+  document.getElementById("tried").value = saved.tried || "";
+  document.getElementById("constraints").value = saved.constraints || "";
+  syncModuleSelectToPath();
+
+  // Fields — array of {field, shows, shouldShow}. Migrate legacy single
+  // field/shows/shouldShow (pre-multi-field schema) into the array.
+  document.getElementById("fields").innerHTML = "";
+  let fields = saved.fields || [];
+  if (!fields.length && (saved.field || saved.shows || saved.shouldShow)) {
+    fields = [{ field: saved.field || "", shows: saved.shows || "", shouldShow: saved.shouldShow || "" }];
+  }
+  if (fields.length) {
+    fields.forEach(f => addFieldRow(f));
+  } else {
+    addFieldRow();
+  }
+
+  // Files
+  document.getElementById("files").innerHTML = "";
+  if (saved.files && saved.files.length) {
+    saved.files.forEach(f => addFileRow(f));
+  } else {
+    addFileRow();
+  }
+
+  // Rules
+  document.querySelectorAll(".rule").forEach(r => {
+    const slug = r.dataset.slug;
+    const checked = (saved.rules || []).includes(slug);
+    r.querySelector("input").checked = checked;
+    r.classList.toggle("checked", checked);
+  });
+
+  // Asks
+  (saved.asks || []).forEach((checked, i) => {
+    const el = document.getElementById(`ask-${i}`);
+    if (el) el.checked = checked;
+  });
+}
+
+/* ---------- UTIL ---------- */
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function escapeAttr(s) {
+  return escapeHtml(s);
+}
+
+function toast(msg, isError) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show" + (isError ? " error" : "");
+  setTimeout(() => { t.className = "toast"; }, 2000);
+}
+
+/* ---------- BOOT ---------- */
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderModules();
+  renderRules();
+  renderAsks();
+  addFileRow();
+  loadState();
+
+  // Prefill Environment / Constraints with project defaults if still empty
+  const envEl = document.getElementById("environment");
+  if (!envEl.value) envEl.value = DEFAULT_ENVIRONMENT;
+  const conEl = document.getElementById("constraints");
+  if (!conEl.value) conEl.value = DEFAULT_CONSTRAINTS;
+
+  // Module combobox handlers
+  const moduleInput = document.getElementById("moduleSelect");
+  moduleInput.addEventListener("focus", openDropdown);
+  moduleInput.addEventListener("click", () => {
+    // Re-open if it was closed (focus event already fired once)
+    if (!isDropdownOpen()) openDropdown();
+    moduleInput.select(); // let the user retype without manually clearing
+  });
+  moduleInput.addEventListener("input", () => {
+    populateModuleDropdown(moduleInput.value);
+    document.getElementById("moduleDropdown").hidden = false;
+  });
+  moduleInput.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown") { e.preventDefault(); if (!isDropdownOpen()) openDropdown(); moveActive(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); moveActive(-1); }
+    else if (e.key === "Enter") { if (isDropdownOpen()) { e.preventDefault(); activateHighlighted(); } }
+    else if (e.key === "Escape") { closeDropdown(); }
+  });
+  document.getElementById("comboToggle").addEventListener("mousedown", e => {
+    e.preventDefault();
+    if (isDropdownOpen()) closeDropdown();
+    else { moduleInput.focus(); openDropdown(); }
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener("mousedown", e => {
+    const wrap = document.querySelector(".combo-wrap");
+    if (wrap && !wrap.contains(e.target)) closeDropdown();
+  });
+
+  // Re-sync the input text when the path is edited manually
+  document.getElementById("moduleFolder").addEventListener("input", syncModuleSelectToPath);
+
+  // Default the date field to today if it's still empty (no saved state,
+  // or saved state had no date value).
+  const dateEl = document.getElementById("date");
+  if (!dateEl.value) {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    dateEl.value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Auto-save on any input
+  document.body.addEventListener("input", saveState);
+  document.body.addEventListener("change", saveState);
+});
+</script>
+</body>
+</html>
